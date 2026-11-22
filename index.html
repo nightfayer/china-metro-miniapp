@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>ChinaMetro · Трекер маршрута</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --green: #22c55e;
+      --red: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 14px 14px 28px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .header {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+      position: sticky;
+      top: 8px;
+      z-index: 10;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, .35);
+    }
+    .title { font-size: 16px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+    .meta { font-size: 13px; color: var(--muted); }
+    .progress-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 12px; color: var(--muted); }
+    .bar { height: 6px; background: #334155; border-radius: 99px; margin-top: 6px; overflow: hidden; }
+    .fill { height: 100%; width: 0%; background: linear-gradient(90deg, #38bdf8, #22c55e); transition: width .25s ease; }
+    .controls { display: flex; gap: 8px; margin-top: 12px; }
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #334155;
+      color: var(--text);
+      transition: transform .1s, opacity .15s;
+    }
+    button:active { transform: scale(0.97); }
+    button.primary { flex: 1.4; background: #0284c7; }
+    button.secondary { flex: 1; }
+    button.icon { flex: 0 0 auto; padding: 10px 14px; }
+
+    .segment {
+      background: rgba(30, 41, 59, 0.55);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .seg-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .dir { font-size: 12px; color: var(--muted); }
+
+    .station {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: background .15s, opacity .15s;
+    }
+    .station:hover { background: rgba(51, 65, 85, 0.45); }
+    .station.cur { background: rgba(56, 189, 248, 0.16); border-left-color: var(--accent); }
+    .station.done { opacity: 0.42; }
+    .station.done .st-ru { text-decoration: line-through; }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex: none;
+      border: 2px solid var(--text);
+    }
+    .station.cur .dot {
+      box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.35);
+      transform: scale(1.15);
+    }
+    .st-names { flex: 1; min-width: 0; }
+    .st-ru { font-weight: 600; font-size: 14px; }
+    .st-en { font-size: 12px; color: var(--muted); }
+    .st-zh { font-size: 13px; color: #cbd5e1; font-weight: 600; text-align: right; white-space: nowrap; }
+    .badge-exit {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      background: rgba(250, 204, 21, 0.2);
+      color: #fde047;
+    }
+
+    .local-card {
+      display: none;
+      background: #ffffff;
+      color: #0f172a;
+      border-radius: 20px;
+      padding: 28px 18px;
+      text-align: center;
+      margin-top: 10px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.45);
+    }
+    .local-ask { color: #64748b; font-size: 16px; margin-bottom: 16px; }
+    .local-zh { color: #dc2626; font-size: 44px; font-weight: 800; line-height: 1.2; margin: 12px 0; }
+    .local-py { color: #64748b; font-size: 16px; margin-top: 14px; }
+    .local-ru { font-size: 18px; font-weight: 700; margin: 6px 0 22px; }
+    .back-btn { width: 100%; background: #0f172a; color: #fff; padding: 13px; font-size: 15px; }
+  </style>
+</head>
+<body>
+
+<div id="view-route">
+  <div class="header">
+    <div class="title" id="h-title">Загрузка маршрута...</div>
+    <div class="meta" id="h-meta"></div>
+    <div class="progress-row">
+      <span id="p-label">Нажмите на станцию, чтобы отметить</span>
+      <span id="p-count">0 / 0</span>
+    </div>
+    <div class="bar"><div class="fill" id="p-fill"></div></div>
+    <div class="controls">
+      <button class="icon" onclick="step(-1)" title="Предыдущая">◀</button>
+      <button class="primary" onclick="step(1)">▶ Следующая станция</button>
+      <button class="secondary" onclick="showLocal(true)">🗣 Местному</button>
+    </div>
+  </div>
+  <div id="segments"></div>
+</div>
+
+<div class="local-card" id="view-local">
+  <div class="local-ask">请问，怎么去这个地铁站？</div>
+  <div class="local-zh" id="l-zh"></div>
+  <hr style="border:0;border-top:1px solid #e2e8f0;margin:18px 20px;">
+  <div class="local-py" id="l-py"></div>
+  <div class="local-ru" id="l-ru"></div>
+  <button class="back-btn" onclick="showLocal(false)">◀ Назад к маршруту</button>
+</div>
+
+<script>
+  const tg = window.Telegram && window.Telegram.WebApp;
+  if (tg) {
+    tg.ready();
+    tg.expand();
+  }
+
+  function decodeBase64UrlJson(b64u) {
+    const b64 = b64u.replace(/-/g, '+').replace(/_/g, '/');
+    const pad = b64.length % 4 ? '='.repeat(4 - (b64.length % 4)) : '';
+    const bin = atob(b64 + pad);
+    const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+    const jsonStr = new TextDecoder('utf-8').decode(bytes);
+    return JSON.parse(jsonStr);
+  }
+
+  const DEMO_DATA = {
+    t: "Шанхай · Аэропорт Пудун → Вайтань",
+    m: "~58 мин · 18 ост. · ~7 ¥ (~86 ₽)",
+    ez: "南京东路",
+    er: "Восточная Нанкинская ул. (Вайтань)",
+    ep: "nán jīng dōng lù",
+    g: [
+      {
+        l: "Линия 2",
+        c: "#97D700",
+        d: "Line 2 → East Xujing (往 徐泾东)",
+        s: [
+          { r: "Аэропорт Пудун", e: "Pudong Airport", z: "浦东1号2号航站楼" },
+          { r: "Лунъян Лу", e: "Longyang Road", z: "龙阳路" },
+          { r: "Век Парк", e: "Century Park", z: "世纪公园" },
+          { r: "Луцзяцзуй", e: "Lujiazui", z: "陆家嘴", x: 1 },
+          { r: "Вост. Нанкинская (Вайтань)", e: "East Nanjing Road", z: "南京东路" }
+        ]
+      }
+    ]
+  };
+
+  let data = DEMO_DATA;
+  try {
+    const hash = window.location.hash || "";
+    const match = hash.match(/d=([^&]+)/);
+    if (match && match[1]) {
+      data = decodeBase64UrlJson(match[1]);
+    }
+  } catch (e) {
+    console.error("Failed to parse route payload:", e);
+  }
+
+  document.getElementById("h-title").textContent = data.t || "Маршрут";
+  document.getElementById("h-meta").textContent = data.m || "";
+  document.getElementById("l-zh").textContent = data.ez || "";
+  document.getElementById("l-py").textContent = data.ep || "";
+  document.getElementById("l-ru").textContent = data.er || "";
+
+  const segContainer = document.getElementById("segments");
+  const stationEls = [];
+
+  (data.g || []).forEach(seg => {
+    const segDiv = document.createElement("div");
+    segDiv.className = "segment";
+
+    const head = document.createElement("div");
+    head.className = "seg-head";
+    head.innerHTML = `<span class="pill" style="background:${seg.c || '#38bdf8'}">${seg.l}</span><span class="dir">${seg.d || ''}</span>`;
+    segDiv.appendChild(head);
+
+    (seg.s || []).forEach((st, idxInSeg) => {
+      const el = document.createElement("div");
+      const globalIdx = stationEls.length;
+      stationEls.push({ el, st });
+      el.className = "station";
+      el.onclick = () => { curIdx = globalIdx; renderProgress(); };
+
+      const badge = st.x ? `<span class="badge-exit">выход после неё</span>` : "";
+      el.innerHTML = `
+        <span class="dot" style="background:${seg.c || '#38bdf8'}"></span>
+        <div class="st-names">
+          <div class="st-ru">${st.r}${badge}</div>
+          ${st.e ? `<div class="st-en">${st.e}</div>` : ""}
+        </div>
+        <div class="st-zh">${st.z || ""}</div>
+      `;
+      segDiv.appendChild(el);
+    });
+
+    segContainer.appendChild(segDiv);
+  });
+
+  let curIdx = 0;
+  function renderProgress() {
+    const total = stationEls.length;
+    stationEls.forEach((item, i) => {
+      item.el.classList.toggle("done", i < curIdx);
+      item.el.classList.toggle("cur", i === curIdx);
+    });
+    const pct = total > 1 ? (curIdx / (total - 1)) * 100 : 100;
+    document.getElementById("p-fill").style.width = pct + "%";
+    document.getElementById("p-count").textContent = `${curIdx + 1} / ${total}`;
+    if (stationEls[curIdx]) {
+      const curSt = stationEls[curIdx].st;
+      document.getElementById("p-label").textContent =
+        curIdx === total - 1 ? "🏁 Вы на конечной станции!" : `Сейчас: ${curSt.r}`;
+    }
+  }
+
+  function step(delta) {
+    const next = curIdx + delta;
+    if (next >= 0 && next < stationEls.length) {
+      curIdx = next;
+      renderProgress();
+      stationEls[curIdx].el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }
+
+  function showLocal(flag) {
+    document.getElementById("view-route").style.display = flag ? "none" : "block";
+    document.getElementById("view-local").style.display = flag ? "block" : "none";
+  }
+
+  renderProgress();
+</script>
+</body>
+</html>
