@@ -2,246 +2,418 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>ChinaMetro · Трекер маршрута</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>ChinaMetro</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg: #0b1220;
-      --card: #162033;
-      --card-soft: rgba(22, 32, 51, 0.72);
-      --border: #28354d;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --accent: #38bdf8;
-      --btn-bg: #26334a;
-      --pill-text: #0f172a;
-      --zh: #cbd5e1;
-      --shadow: 0 12px 28px rgba(0, 0, 0, .38);
+      --bg: #0a0a0b;
+      --surface: #141416;
+      --surface-elevated: #1c1c1f;
+      --border: #26262a;
+      --text: #fafafa;
+      --text-secondary: #8e8e93;
+      --text-tertiary: #636366;
+      --btn-secondary: #222226;
+      --dock-bg: rgba(20, 20, 22, 0.86);
+      --warn-bg: rgba(245, 158, 11, 0.14);
+      --warn-border: rgba(245, 158, 11, 0.32);
+      --warn-text: #fbbf24;
+      --dot-border: #0a0a0b;
     }
     body.light {
-      --bg: #f1f5f9;
-      --card: #ffffff;
-      --card-soft: #ffffff;
-      --border: #cbd5e1;
-      --text: #0f172a;
-      --muted: #475569;
-      --accent: #0284c7;
-      --btn-bg: #e2e8f0;
-      --zh: #334155;
-      --shadow: 0 8px 20px rgba(15, 23, 42, .10);
+      --bg: #f5f5f7;
+      --surface: #ffffff;
+      --surface-elevated: #f0f0f3;
+      --border: #e5e5ea;
+      --text: #111113;
+      --text-secondary: #6e6e73;
+      --text-tertiary: #8e8e93;
+      --btn-secondary: #e8e8ed;
+      --dock-bg: rgba(255, 255, 255, 0.88);
+      --warn-bg: #fef3c7;
+      --warn-border: #fcd34d;
+      --warn-text: #92400e;
+      --dot-border: #ffffff;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding: 12px 12px 32px;
+      padding: 12px 14px 104px;
       font-size: 14px;
-      line-height: 1.4;
-      transition: background .2s, color .2s;
+      line-height: 1.38;
+      font-variant-numeric: tabular-nums;
+      transition: background .2s ease, color .2s ease;
     }
-    .header {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 14px;
-      margin-bottom: 14px;
-      position: sticky;
-      top: 8px;
-      z-index: 10;
-      box-shadow: var(--shadow);
-    }
-    .top-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-    .title { font-size: 16px; font-weight: 800; color: var(--accent); margin-bottom: 3px; }
-    .theme-btn {
-      flex: none;
-      padding: 6px 10px;
-      border-radius: 10px;
-      font-size: 14px;
-      background: var(--btn-bg);
-      color: var(--text);
-    }
-    .meta { font-size: 12.5px; color: var(--muted); }
-    .alert-banner {
-      display: none;
-      margin-top: 10px;
-      padding: 8px 10px;
-      border-radius: 10px;
-      font-size: 12.5px;
-      font-weight: 700;
-      background: rgba(250, 204, 21, 0.18);
-      color: #facc15;
-      border: 1px solid rgba(250, 204, 21, 0.35);
-    }
-    body.light .alert-banner { background: #fef9c3; color: #854d0e; border-color: #fde047; }
 
-    .progress-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 12px; color: var(--muted); font-weight: 600; }
-    .bar { height: 7px; background: var(--btn-bg); border-radius: 99px; margin-top: 6px; overflow: hidden; }
-    .fill { height: 100%; width: 0%; background: linear-gradient(90deg, #38bdf8, #22c55e); transition: width .25s ease; }
-
-    .controls { display: flex; gap: 8px; margin-top: 12px; }
-    button {
-      border: 0;
-      border-radius: 11px;
-      padding: 11px 12px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      background: var(--btn-bg);
-      color: var(--text);
-      transition: transform .1s, opacity .15s;
-    }
-    button:active { transform: scale(0.96); }
-    button.primary { flex: 1.5; background: #0284c7; color: #ffffff; }
-    button.secondary { flex: 1; }
-    button.icon { flex: 0 0 auto; padding: 11px 14px; }
-
-    .segment {
-      background: var(--card-soft);
+    /* Summary Header */
+    .summary {
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 12px;
-      margin-bottom: 12px;
-      box-shadow: var(--shadow);
+      padding: 14px 16px;
+      margin-bottom: 14px;
     }
-    .seg-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
-    .pill {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 99px;
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--pill-text);
+    .summary-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
     }
-    .dir { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .city-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: var(--surface-elevated);
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .route-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      margin-bottom: 10px;
+    }
+    .metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .metrics strong { color: var(--text); font-weight: 600; }
 
-    .station {
+    .progress-wrap { margin-top: 10px; }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    .progress-track {
+      height: 4px;
+      background: var(--surface-elevated);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--text);
+      border-radius: 99px;
+      transition: width .25s cubic-bezier(.22,1,.36,1);
+    }
+
+    .notice {
+      display: none;
+      margin-top: 10px;
+      padding: 9px 11px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 600;
+      background: var(--warn-bg);
+      border: 1px solid var(--warn-border);
+      color: var(--warn-text);
+    }
+
+    /* Transit Timeline */
+    .segment {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 14px 10px;
+      margin-bottom: 8px;
+    }
+    .seg-header {
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 9px 10px;
-      border-radius: 11px;
+      margin-bottom: 12px;
+    }
+    .line-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #0a0a0b;
+      flex: none;
+    }
+    .seg-dir {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .station-row {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 7px 8px 11px 6px;
+      border-radius: 10px;
       cursor: pointer;
-      border-left: 3px solid transparent;
       transition: background .15s, opacity .15s;
     }
-    .station:hover { background: rgba(56, 189, 248, 0.08); }
-    .station.cur { background: rgba(56, 189, 248, 0.16); border-left-color: var(--accent); }
-    .station.done { opacity: 0.42; }
-    .station.done .st-ru { text-decoration: line-through; }
+    .station-row:active { background: var(--surface-elevated); }
+    .station-row.cur { background: var(--surface-elevated); }
+    .station-row.done { opacity: 0.38; }
+    .station-row.done .st-ru { text-decoration: line-through; }
 
-    .dot {
+    /* Continuous Vertical Spine */
+    .rail-col {
+      position: relative;
+      width: 18px;
+      display: flex;
+      justify-content: center;
+      align-self: stretch;
+      flex: none;
+    }
+    .rail-line {
+      position: absolute;
+      top: 14px;
+      bottom: -18px;
+      width: 4px;
+      border-radius: 2px;
+    }
+    .station-row:last-child .rail-line { display: none; }
+
+    .rail-dot {
+      position: relative;
+      z-index: 2;
+      margin-top: 3px;
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      flex: none;
-      border: 2px solid var(--text);
+      background: var(--surface);
+      border: 3px solid var(--line-color, #888);
+      transition: transform .15s;
     }
-    .station.cur .dot {
-      box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.35);
-      transform: scale(1.18);
+    .station-row.major .rail-dot {
+      width: 16px;
+      height: 16px;
+      margin-top: 1px;
+      background: var(--line-color, #888);
+      border: 3px solid var(--dot-border);
+      box-shadow: 0 0 0 1.5px var(--line-color, #888);
     }
-    .st-names { flex: 1; min-width: 0; }
-    .st-ru { font-weight: 700; font-size: 14px; }
-    .st-en { font-size: 12px; color: var(--muted); }
-    .st-zh { font-size: 13px; color: var(--zh); font-weight: 700; text-align: right; white-space: nowrap; }
+    .station-row.cur .rail-dot {
+      transform: scale(1.22);
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.18);
+    }
+    body.light .station-row.cur .rail-dot {
+      box-shadow: 0 0 0 4px rgba(17, 17, 19, 0.14);
+    }
 
-    .badge {
+    .st-main { flex: 1; min-width: 0; }
+    .st-ru { font-size: 14.5px; font-weight: 600; color: var(--text); line-height: 1.25; }
+    .st-en { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .st-zh {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-align: right;
+      white-space: nowrap;
+      padding-top: 1px;
+    }
+
+    .tag {
       display: inline-block;
       margin-left: 6px;
       padding: 1px 6px;
-      border-radius: 6px;
-      font-size: 10px;
-      font-weight: 800;
+      border-radius: 5px;
+      font-size: 10.5px;
+      font-weight: 700;
       vertical-align: middle;
+      background: var(--warn-bg);
+      color: var(--warn-text);
     }
-    .badge-exit { background: rgba(250, 204, 21, 0.22); color: #fde047; }
-    body.light .badge-exit { background: #fef08a; color: #854d0e; }
-    .badge-tr { background: rgba(56, 189, 248, 0.22); color: #38bdf8; }
-    body.light .badge-tr { background: #e0f2fe; color: #0369a1; }
 
-    .local-card {
+    /* Transfer Connector */
+    .transfer-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 20px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .transfer-dots {
+      width: 16px;
+      height: 18px;
+      border-left: 2px dashed var(--text-tertiary);
+      margin-left: 7px;
+    }
+
+    /* Floating Bottom Dock */
+    .dock {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: max(12px, env(safe-area-inset-bottom));
+      background: var(--dock-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 8px;
+      display: flex;
+      gap: 8px;
+      z-index: 20;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, .35);
+    }
+    .dock button {
+      border: 0;
+      border-radius: 11px;
+      height: 42px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform .1s ease, opacity .15s;
+    }
+    .dock button:active { transform: scale(0.97); }
+    .btn-prev { width: 46px; flex: none; background: var(--btn-secondary); color: var(--text); }
+    .btn-next { flex: 1.5; background: var(--text); color: var(--bg); font-weight: 700; }
+    .btn-local { flex: 1; background: var(--btn-secondary); color: var(--text); }
+
+    /* Show-to-Local Fullscreen Card */
+    .local-view {
       display: none;
       background: #ffffff;
-      color: #0f172a;
-      border-radius: 22px;
-      padding: 32px 18px;
+      color: #111113;
+      border-radius: 20px;
+      padding: 36px 20px 24px;
       text-align: center;
-      margin-top: 8px;
-      box-shadow: 0 14px 32px rgba(0,0,0,.4);
-      border: 3px solid #0f172a;
+      border: 1px solid #e5e5ea;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, .25);
     }
-    .local-ask { color: #64748b; font-size: 17px; margin-bottom: 16px; }
-    .local-zh { color: #dc2626; font-size: 46px; font-weight: 900; line-height: 1.2; margin: 14px 0; }
-    .local-py { color: #64748b; font-size: 16px; margin-top: 14px; }
-    .local-ru { font-size: 18px; font-weight: 700; margin: 6px 0 24px; }
-    .back-btn { width: 100%; background: #0f172a; color: #fff; padding: 14px; font-size: 15px; }
+    .local-ask { font-size: 16px; color: #6e6e73; margin-bottom: 18px; }
+    .local-zh { font-size: 46px; font-weight: 800; color: #dc2626; line-height: 1.15; letter-spacing: 0.02em; margin: 12px 0; }
+    .local-div { height: 1px; background: #e5e5ea; margin: 22px 16px; }
+    .local-py { font-size: 15px; color: #6e6e73; }
+    .local-ru { font-size: 18px; font-weight: 700; color: #111113; margin: 6px 0 26px; }
+    .local-back {
+      width: 100%;
+      height: 46px;
+      border: 0;
+      border-radius: 12px;
+      background: #111113;
+      color: #ffffff;
+      font-size: 14.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
 
 <div id="view-route">
-  <div class="header">
-    <div class="top-row">
-      <div>
-        <div class="title" id="h-title">Загрузка маршрута...</div>
-        <div class="meta" id="h-meta"></div>
+  <div class="summary">
+    <div class="summary-top">
+      <div class="city-label" id="h-city">Маршрут</div>
+      <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" aria-label="Сменить тему"></button>
+    </div>
+    <div class="route-title" id="h-title">Загрузка...</div>
+    <div class="metrics" id="h-metrics"></div>
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span id="p-label">Нажмите на станцию для отметки</span>
+        <span id="p-count">1 / 1</span>
       </div>
-      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Светлая / тёмная тема">☀️</button>
+      <div class="progress-track"><div class="progress-fill" id="p-fill"></div></div>
     </div>
-    <div class="alert-banner" id="alert-banner"></div>
-    <div class="progress-row">
-      <span id="p-label">Тапайте на станции по ходу поездки</span>
-      <span id="p-count">0 / 0</span>
-    </div>
-    <div class="bar"><div class="fill" id="p-fill"></div></div>
-    <div class="controls">
-      <button class="icon" onclick="step(-1)" title="Предыдущая">◀</button>
-      <button class="primary" onclick="step(1)">▶ Следующая станция</button>
-      <button class="secondary" onclick="showLocal(true)">🗣 Местному</button>
-    </div>
+    <div class="notice" id="notice"></div>
   </div>
+
   <div id="segments"></div>
+
+  <div class="dock">
+    <button class="btn-prev" onclick="step(-1)" aria-label="Предыдущая станция">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button class="btn-next" onclick="step(1)">
+      <span>Следующая</span>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+    <button class="btn-local" onclick="showLocal(true)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Местному</span>
+    </button>
+  </div>
 </div>
 
-<div class="local-card" id="view-local">
+<div class="local-view" id="view-local">
   <div class="local-ask">请问，怎么去这个地铁站？</div>
   <div class="local-zh" id="l-zh"></div>
-  <hr style="border:0;border-top:2px solid #e2e8f0;margin:18px 20px;">
+  <div class="local-div"></div>
   <div class="local-py" id="l-py"></div>
   <div class="local-ru" id="l-ru"></div>
-  <button class="back-btn" onclick="showLocal(false)">◀ Назад к маршруту</button>
+  <button class="local-back" onclick="showLocal(false)">Вернуться к маршруту</button>
 </div>
 
 <script>
   const tg = window.Telegram && window.Telegram.WebApp;
-  if (tg) {
-    tg.ready();
-    tg.expand();
-  }
+  if (tg) { tg.ready(); tg.expand(); }
 
-  function applySavedTheme() {
+  const SUN_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+  const MOON_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+
+  function applyTheme() {
     const saved = localStorage.getItem("cm_theme");
     const isLight = saved ? saved === "light" : (tg && tg.colorScheme === "light");
     document.body.classList.toggle("light", !!isLight);
-    document.getElementById("theme-btn").textContent = isLight ? "🌙" : "☀️";
+    document.getElementById("theme-btn").innerHTML = isLight ? MOON_SVG : SUN_SVG;
   }
   function toggleTheme() {
     const isLight = !document.body.classList.contains("light");
     document.body.classList.toggle("light", isLight);
     localStorage.setItem("cm_theme", isLight ? "light" : "dark");
-    document.getElementById("theme-btn").textContent = isLight ? "🌙" : "☀️";
+    document.getElementById("theme-btn").innerHTML = isLight ? MOON_SVG : SUN_SVG;
   }
-  applySavedTheme();
+  applyTheme();
 
   function decodeBase64UrlJson(b64u) {
     const b64 = b64u.replace(/-/g, '+').replace(/_/g, '/');
     const pad = b64.length % 4 ? '='.repeat(4 - (b64.length % 4)) : '';
     const bin = atob(b64 + pad);
     const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
-    const jsonStr = new TextDecoder('utf-8').decode(bytes);
-    return JSON.parse(jsonStr);
+    return JSON.parse(new TextDecoder('utf-8').decode(bytes));
+  }
+
+  function contrastText(hex) {
+    const c = (hex || "#38bdf8").replace("#", "");
+    if (c.length !== 6) return "#0a0a0b";
+    const r = parseInt(c.slice(0,2), 16), g = parseInt(c.slice(2,4), 16), b = parseInt(c.slice(4,6), 16);
+    const luma = 0.299 * r + 0.587 * g + 0.114 * b;
+    return luma < 125 ? "#ffffff" : "#0a0a0b";
   }
 
   const DEMO_DATA = {
@@ -268,54 +440,78 @@
 
   let data = DEMO_DATA;
   try {
-    const hash = window.location.hash || "";
-    const match = hash.match(/d=([^&]+)/);
-    if (match && match[1]) {
-      data = decodeBase64UrlJson(match[1]);
-    }
-  } catch (e) {
-    console.error("Failed to parse route payload:", e);
+    const m = (window.location.hash || "").match(/d=([^&]+)/);
+    if (m && m[1]) data = decodeBase64UrlJson(m[1]);
+  } catch (e) { console.error(e); }
+
+  const titleParts = (data.t || "").split(" · ");
+  if (titleParts.length > 1) {
+    document.getElementById("h-city").textContent = titleParts[0];
+    document.getElementById("h-title").textContent = titleParts.slice(1).join(" · ");
+  } else {
+    document.getElementById("h-title").textContent = data.t || "Маршрут";
   }
 
-  document.getElementById("h-title").textContent = data.t || "Маршрут";
-  document.getElementById("h-meta").textContent = data.m || "";
+  const metricsHtml = (data.m || "")
+    .split("·")
+    .map(p => p.trim())
+    .filter(Boolean)
+    .map(p => `<span><strong>${p}</strong></span>`)
+    .join("");
+  document.getElementById("h-metrics").innerHTML = metricsHtml;
+
   document.getElementById("l-zh").textContent = data.ez || "";
   document.getElementById("l-py").textContent = data.ep || "";
   document.getElementById("l-ru").textContent = data.er || "";
 
   const segContainer = document.getElementById("segments");
   const stationEls = [];
-  const totalSegs = (data.g || []).length;
 
   (data.g || []).forEach((seg, segIdx) => {
+    if (segIdx > 0) {
+      const tr = document.createElement("div");
+      tr.className = "transfer-link";
+      tr.innerHTML = `<div class="transfer-dots"></div><span>Переход на ${seg.l}</span>`;
+      segContainer.appendChild(tr);
+    }
+
     const segDiv = document.createElement("div");
     segDiv.className = "segment";
+    const lineColor = seg.c || "#38bdf8";
 
+    const badgeTxt = (seg.l || "").replace(/^Линия\s+/i, "");
     const head = document.createElement("div");
-    head.className = "seg-head";
-    head.innerHTML = `<span class="pill" style="background:${seg.c || '#38bdf8'}">${seg.l}</span><span class="dir">${seg.d || ''}</span>`;
+    head.className = "seg-header";
+    head.innerHTML = `
+      <span class="line-badge" style="background:${lineColor};color:${contrastText(lineColor)}">${badgeTxt}</span>
+      <span class="seg-dir">${seg.d || ""}</span>
+    `;
     segDiv.appendChild(head);
 
-    (seg.s || []).forEach((st, idxInSeg) => {
+    const list = seg.s || [];
+    list.forEach((st, idxInSeg) => {
       const el = document.createElement("div");
       const globalIdx = stationEls.length;
+      const isMajor = idxInSeg === 0 || idxInSeg === list.length - 1;
       const isTransferStart = segIdx > 0 && idxInSeg === 0;
+
       stationEls.push({ el, st, seg, isTransferStart });
-      el.className = "station";
+      el.className = "station-row" + (isMajor ? " major" : "");
+      el.style.setProperty("--line-color", lineColor);
       el.onclick = () => {
         curIdx = globalIdx;
         if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
         renderProgress();
       };
 
-      let badges = "";
-      if (isTransferStart) badges += `<span class="badge badge-tr">пересадка</span>`;
-      if (st.x) badges += `<span class="badge badge-exit">выход после неё</span>`;
-
+      const tag = st.x ? `<span class="tag">выход после неё</span>` : "";
       el.innerHTML = `
-        <span class="dot" style="background:${seg.c || '#38bdf8'}"></span>
-        <div class="st-names">
-          <div class="st-ru">${st.r}${badges}</div>
+        <div class="rail-col">
+          <div class="rail-line" style="background:${lineColor}"></div>
+          <div class="rail-dot"></div>
+        </div>
+        <div class="st-main">
+          <div class="st-ru">${st.r}${tag}</div>
           ${st.e ? `<div class="st-en">${st.e}</div>` : ""}
         </div>
         <div class="st-zh">${st.z || ""}</div>
@@ -337,24 +533,24 @@
     document.getElementById("p-fill").style.width = pct + "%";
     document.getElementById("p-count").textContent = `${curIdx + 1} / ${total}`;
 
-    const banner = document.getElementById("alert-banner");
+    const notice = document.getElementById("notice");
     const curItem = stationEls[curIdx];
     if (curItem) {
       const curSt = curItem.st;
       document.getElementById("p-label").textContent =
-        curIdx === total - 1 ? "🏁 Вы на конечной станции!" : `Сейчас: ${curSt.r}`;
+        curIdx === total - 1 ? "Конечная станция" : `Сейчас: ${curSt.r}`;
 
       if (curIdx === total - 1) {
-        banner.style.display = "block";
-        banner.textContent = `🏁 Выходите на станции ${curSt.r} (${curSt.z})!`;
+        notice.style.display = "block";
+        notice.textContent = `Выходите на станции ${curSt.r} (${curSt.z})`;
       } else if (curSt.x) {
-        banner.style.display = "block";
-        banner.textContent = "🔔 Приготовьтесь! На следующей станции выходим.";
+        notice.style.display = "block";
+        notice.textContent = "Приготовьтесь — на следующей станции ваш выход";
       } else if (curItem.isTransferStart) {
-        banner.style.display = "block";
-        banner.textContent = `🔄 Пересадка на ${curItem.seg.l} (${curItem.seg.d})`;
+        notice.style.display = "block";
+        notice.textContent = `Пересадка: следуйте указателям ${curItem.seg.d}`;
       } else {
-        banner.style.display = "none";
+        notice.style.display = "none";
       }
     }
   }
@@ -365,7 +561,7 @@
       curIdx = next;
       if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
       renderProgress();
-      stationEls[curIdx].el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      stationEls[curIdx].el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }
 
