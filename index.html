@@ -570,7 +570,9 @@
     er: "Восточная Нанкинская ул. (Вайтань)",
     ep: "nán jīng dōng lù",
     tip: "Выход 2 или 7 — ~7–10 мин пешком прямо до набережной Вайтань.",
-    amap: "https://uri.amap.com/marker?position=121.4846,31.2381&name=%E5%8D%97%E4%BA%AC%E4%B8%9C%E8%B7%AF",
+    lat: 31.2381,
+    lon: 121.4846,
+    amap: "https://uri.amap.com/marker?position=121.4846,31.2381&name=%E5%8D%97%E4%BA%AC%E4%B8%9C%E8%B7%AF&src=chinametro&callnative=1",
     g: [
       {
         l: "Линия 2",
@@ -617,16 +619,49 @@
       et.style.display = "block";
       et.textContent = data.tip;
     }
-    if (data.amap) {
+    if (data.amap || (data.lat && data.lon)) {
       const al = document.getElementById("amap-link");
       al.style.display = "inline-flex";
-      al.href = data.amap;
+      const webUrl = data.amap || `https://uri.amap.com/marker?position=${data.lon},${data.lat}&name=${encodeURIComponent(data.ez || "")}&src=chinametro&callnative=1`;
+      al.href = webUrl;
       al.onclick = (e) => {
-        if (tg && tg.openLink) {
-          e.preventDefault();
-          tg.openLink(data.amap);
-        }
+        e.preventDefault();
+        openInAmapApp(data.lat, data.lon, data.ez || data.er || "", webUrl);
       };
+    }
+  }
+
+  function openInAmapApp(lat, lon, name, fallbackUrl) {
+    const ua = navigator.userAgent || "";
+    const isIOS = /iPad|iPhone|iPod/i.test(ua);
+    const isAndroid = /Android/i.test(ua);
+    const qName = encodeURIComponent(name || "");
+
+    let schemeUrl = "";
+    if (lat && lon) {
+      if (isIOS) {
+        schemeUrl = `iosamap://viewMap?sourceApplication=ChinaMetro&poiname=${qName}&lat=${lat}&lon=${lon}&dev=0`;
+      } else if (isAndroid) {
+        schemeUrl = `androidamap://viewMap?sourceApplication=ChinaMetro&poiname=${qName}&lat=${lat}&lon=${lon}&dev=0`;
+      }
+    }
+
+    if (schemeUrl) {
+      let leftPage = false;
+      const onHide = () => { if (document.hidden) leftPage = true; };
+      document.addEventListener("visibilitychange", onHide, { once: true });
+
+      window.location.href = schemeUrl;
+      setTimeout(() => {
+        document.removeEventListener("visibilitychange", onHide);
+        if (!leftPage) {
+          if (tg && tg.openLink) tg.openLink(fallbackUrl);
+          else window.open(fallbackUrl, "_blank");
+        }
+      }, 750);
+    } else {
+      if (tg && tg.openLink) tg.openLink(fallbackUrl);
+      else window.open(fallbackUrl, "_blank");
     }
   }
 
