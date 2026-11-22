@@ -15,7 +15,7 @@
       --text-secondary: #8e8e93;
       --text-tertiary: #636366;
       --btn-secondary: #222226;
-      --dock-bg: rgba(20, 20, 22, 0.86);
+      --dock-bg: rgba(20, 20, 22, 0.88);
       --warn-bg: rgba(245, 158, 11, 0.14);
       --warn-border: rgba(245, 158, 11, 0.32);
       --warn-text: #fbbf24;
@@ -30,7 +30,7 @@
       --text-secondary: #6e6e73;
       --text-tertiary: #8e8e93;
       --btn-secondary: #e8e8ed;
-      --dock-bg: rgba(255, 255, 255, 0.88);
+      --dock-bg: rgba(255, 255, 255, 0.90);
       --warn-bg: #fef3c7;
       --warn-border: #fcd34d;
       --warn-text: #92400e;
@@ -54,7 +54,7 @@
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 14px 16px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
     .summary-top {
       display: flex;
@@ -69,6 +69,7 @@
       text-transform: uppercase;
       color: var(--text-secondary);
     }
+    .top-actions { display: flex; gap: 6px; align-items: center; }
     .icon-btn {
       width: 32px;
       height: 32px;
@@ -81,20 +82,21 @@
       justify-content: center;
       cursor: pointer;
     }
+    .icon-btn.hidden { display: none; }
     .route-title {
       font-size: 18px;
       font-weight: 700;
       letter-spacing: -0.02em;
       line-height: 1.25;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
     .metrics {
       display: flex;
       flex-wrap: wrap;
-      gap: 14px;
-      font-size: 13px;
+      gap: 12px;
+      font-size: 12.5px;
       color: var(--text-secondary);
-      padding-bottom: 12px;
+      padding-bottom: 11px;
       border-bottom: 1px solid var(--border);
     }
     .metrics strong { color: var(--text); font-weight: 600; }
@@ -106,7 +108,9 @@
       font-size: 12px;
       color: var(--text-secondary);
       margin-bottom: 6px;
+      gap: 8px;
     }
+    .progress-meta strong { color: var(--text); font-weight: 600; }
     .progress-track {
       height: 4px;
       background: var(--surface-elevated);
@@ -138,15 +142,19 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 14px 14px 10px;
+      padding: 13px 14px 10px;
       margin-bottom: 8px;
     }
+    .segment.collapsed { padding-bottom: 13px; }
+    .segment.collapsed .seg-body { display: none; }
     .seg-header {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 12px;
+      cursor: pointer;
+      user-select: none;
     }
+    .segment:not(.collapsed) .seg-header { margin-bottom: 12px; }
     .line-badge {
       display: inline-flex;
       align-items: center;
@@ -161,12 +169,19 @@
       flex: none;
     }
     .seg-dir {
+      flex: 1;
       font-size: 12.5px;
       color: var(--text-secondary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .seg-chev {
+      color: var(--text-tertiary);
+      transition: transform .2s ease;
+      flex: none;
+    }
+    .segment.collapsed .seg-chev { transform: rotate(-90deg); }
 
     .station-row {
       position: relative;
@@ -269,6 +284,40 @@
       margin-left: 7px;
     }
 
+    /* Exit Tip & Amap Card */
+    .exit-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-top: 10px;
+    }
+    .exit-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    .exit-tip { font-size: 13.5px; color: var(--text); line-height: 1.45; margin-bottom: 12px; }
+    .amap-btn {
+      width: 100%;
+      height: 40px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-elevated);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
     /* Floating Bottom Dock */
     .dock {
       position: fixed;
@@ -310,24 +359,59 @@
       background: #ffffff;
       color: #111113;
       border-radius: 20px;
-      padding: 36px 20px 24px;
+      padding: 20px 18px 22px;
       text-align: center;
       border: 1px solid #e5e5ea;
       box-shadow: 0 16px 40px rgba(0, 0, 0, .25);
     }
-    .local-ask { font-size: 16px; color: #6e6e73; margin-bottom: 18px; }
-    .local-zh { font-size: 46px; font-weight: 800; color: #dc2626; line-height: 1.15; letter-spacing: 0.02em; margin: 12px 0; }
-    .local-div { height: 1px; background: #e5e5ea; margin: 22px 16px; }
+    .seg-switch {
+      display: flex;
+      background: #f0f0f3;
+      border-radius: 10px;
+      padding: 3px;
+      margin-bottom: 22px;
+    }
+    .seg-switch button {
+      flex: 1;
+      height: 34px;
+      border: 0;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      background: transparent;
+      color: #6e6e73;
+    }
+    .seg-switch button.active {
+      background: #ffffff;
+      color: #111113;
+      box-shadow: 0 1px 4px rgba(0,0,0,.1);
+    }
+    .local-ask { font-size: 16px; color: #6e6e73; margin-bottom: 14px; }
+    .local-zh { font-size: 44px; font-weight: 800; color: #dc2626; line-height: 1.15; letter-spacing: 0.02em; margin: 10px 0; }
+    .local-div { height: 1px; background: #e5e5ea; margin: 20px 12px; }
     .local-py { font-size: 15px; color: #6e6e73; }
-    .local-ru { font-size: 18px; font-weight: 700; color: #111113; margin: 6px 0 26px; }
+    .local-ru { font-size: 17.5px; font-weight: 700; color: #111113; margin: 6px 0 22px; }
+    .local-actions { display: flex; gap: 8px; }
+    .local-copy {
+      flex: 1;
+      height: 46px;
+      border: 1px solid #d1d1d6;
+      border-radius: 12px;
+      background: #f5f5f7;
+      color: #111113;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
     .local-back {
-      width: 100%;
+      flex: 1.2;
       height: 46px;
       border: 0;
       border-radius: 12px;
       background: #111113;
       color: #ffffff;
-      font-size: 14.5px;
+      font-size: 14px;
       font-weight: 600;
       cursor: pointer;
     }
@@ -339,14 +423,19 @@
   <div class="summary">
     <div class="summary-top">
       <div class="city-label" id="h-city">Маршрут</div>
-      <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" aria-label="Сменить тему"></button>
+      <div class="top-actions">
+        <button class="icon-btn hidden" id="reset-btn" onclick="resetProgress()" aria-label="Сбросить прогресс" title="Начать заново">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        </button>
+        <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" aria-label="Сменить тему"></button>
+      </div>
     </div>
     <div class="route-title" id="h-title">Загрузка...</div>
     <div class="metrics" id="h-metrics"></div>
     <div class="progress-wrap">
       <div class="progress-meta">
-        <span id="p-label">Нажмите на станцию для отметки</span>
-        <span id="p-count">1 / 1</span>
+        <span id="p-label">Тапайте на станции по ходу поездки</span>
+        <span id="p-rem"></span>
       </div>
       <div class="progress-track"><div class="progress-fill" id="p-fill"></div></div>
     </div>
@@ -354,6 +443,15 @@
   </div>
 
   <div id="segments"></div>
+
+  <div class="exit-card" id="exit-card" style="display:none;">
+    <div class="exit-title">Выход из метро и карта</div>
+    <div class="exit-tip" id="exit-tip" style="display:none;"></div>
+    <a class="amap-btn" id="amap-link" href="#" target="_blank" style="display:none;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+      <span>Открыть выход в Amap</span>
+    </a>
+  </div>
 
   <div class="dock">
     <button class="btn-prev" onclick="step(-1)" aria-label="Предыдущая станция">
@@ -371,12 +469,19 @@
 </div>
 
 <div class="local-view" id="view-local">
+  <div class="seg-switch">
+    <button id="sw-end" class="active" onclick="setLocalMode('end')">Конечная</button>
+    <button id="sw-cur" onclick="setLocalMode('cur')">Текущая станция</button>
+  </div>
   <div class="local-ask">请问，怎么去这个地铁站？</div>
   <div class="local-zh" id="l-zh"></div>
   <div class="local-div"></div>
   <div class="local-py" id="l-py"></div>
   <div class="local-ru" id="l-ru"></div>
-  <button class="local-back" onclick="showLocal(false)">Вернуться к маршруту</button>
+  <div class="local-actions">
+    <button class="local-copy" id="copy-btn" onclick="copyZh()">Скопировать</button>
+    <button class="local-back" onclick="showLocal(false)">К маршруту</button>
+  </div>
 </div>
 
 <script>
@@ -419,9 +524,12 @@
   const DEMO_DATA = {
     t: "Шанхай · Аэропорт Пудун → Вайтань",
     m: "~58 мин · 18 ост. · ~7 ¥ (~86 ₽)",
+    tm: 58,
     ez: "南京东路",
     er: "Восточная Нанкинская ул. (Вайтань)",
     ep: "nán jīng dōng lù",
+    tip: "Выход 2 или 7 — ~7–10 мин пешком прямо до набережной Вайтань.",
+    amap: "https://uri.amap.com/marker?position=121.4846,31.2381&name=%E5%8D%97%E4%BA%AC%E4%B8%9C%E8%B7%AF",
     g: [
       {
         l: "Линия 2",
@@ -460,12 +568,30 @@
     .join("");
   document.getElementById("h-metrics").innerHTML = metricsHtml;
 
-  document.getElementById("l-zh").textContent = data.ez || "";
-  document.getElementById("l-py").textContent = data.ep || "";
-  document.getElementById("l-ru").textContent = data.er || "";
+  // Exit tip & Amap button
+  if (data.tip || data.amap) {
+    document.getElementById("exit-card").style.display = "block";
+    if (data.tip) {
+      const et = document.getElementById("exit-tip");
+      et.style.display = "block";
+      et.textContent = data.tip;
+    }
+    if (data.amap) {
+      const al = document.getElementById("amap-link");
+      al.style.display = "inline-flex";
+      al.href = data.amap;
+      al.onclick = (e) => {
+        if (tg && tg.openLink) {
+          e.preventDefault();
+          tg.openLink(data.amap);
+        }
+      };
+    }
+  }
 
   const segContainer = document.getElementById("segments");
   const stationEls = [];
+  const segmentBoxes = [];
 
   (data.g || []).forEach((seg, segIdx) => {
     if (segIdx > 0) {
@@ -484,18 +610,27 @@
     head.className = "seg-header";
     head.innerHTML = `
       <span class="line-badge" style="background:${lineColor};color:${contrastText(lineColor)}">${badgeTxt}</span>
-      <span class="seg-dir">${seg.d || ""}</span>
+      <span class="seg-dir" id="seg-dir-${segIdx}">${seg.d || ""}</span>
+      <svg class="seg-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
     `;
+    head.onclick = () => {
+      segDiv.dataset.manualToggle = "1";
+      segDiv.classList.toggle("collapsed");
+    };
     segDiv.appendChild(head);
 
+    const bodyDiv = document.createElement("div");
+    bodyDiv.className = "seg-body";
+
     const list = seg.s || [];
+    const segStartGlobal = stationEls.length;
     list.forEach((st, idxInSeg) => {
       const el = document.createElement("div");
       const globalIdx = stationEls.length;
       const isMajor = idxInSeg === 0 || idxInSeg === list.length - 1;
       const isTransferStart = segIdx > 0 && idxInSeg === 0;
 
-      stationEls.push({ el, st, seg, isTransferStart });
+      stationEls.push({ el, st, seg, segIdx, isTransferStart });
       el.className = "station-row" + (isMajor ? " major" : "");
       el.style.setProperty("--line-color", lineColor);
       el.onclick = () => {
@@ -516,22 +651,67 @@
         </div>
         <div class="st-zh">${st.z || ""}</div>
       `;
-      segDiv.appendChild(el);
+      bodyDiv.appendChild(el);
     });
 
+    segDiv.appendChild(bodyDiv);
     segContainer.appendChild(segDiv);
+    segmentBoxes.push({
+      div: segDiv,
+      dirEl: head.querySelector(".seg-dir"),
+      origDir: seg.d || "",
+      lineName: seg.l || "",
+      startGlobal: segStartGlobal,
+      endGlobal: stationEls.length - 1,
+      count: Math.max(0, list.length - 1),
+    });
   });
 
+  // Persist position per route title
+  const storageKey = "cm_pos_" + (data.t || "demo").slice(0, 64);
   let curIdx = 0;
+  try {
+    const savedIdx = parseInt(localStorage.getItem(storageKey) || "0", 10);
+    if (!isNaN(savedIdx) && savedIdx >= 0 && savedIdx < stationEls.length) {
+      curIdx = savedIdx;
+    }
+  } catch (e) {}
+
   function renderProgress() {
     const total = stationEls.length;
+    try { localStorage.setItem(storageKey, String(curIdx)); } catch (e) {}
+
+    document.getElementById("reset-btn").classList.toggle("hidden", curIdx === 0);
+
     stationEls.forEach((item, i) => {
       item.el.classList.toggle("done", i < curIdx);
       item.el.classList.toggle("cur", i === curIdx);
     });
+
+    // Auto-collapse completed segments (unless manually toggled)
+    const activeSegIdx = stationEls[curIdx] ? stationEls[curIdx].segIdx : 0;
+    segmentBoxes.forEach((box, sIdx) => {
+      const isPassed = sIdx < activeSegIdx;
+      if (!box.div.dataset.manualToggle) {
+        box.div.classList.toggle("collapsed", isPassed);
+      }
+      box.dirEl.textContent = isPassed
+        ? `Пройдено (${box.count} ост.) — нажмите, чтобы раскрыть`
+        : box.origDir;
+    });
+
     const pct = total > 1 ? (curIdx / (total - 1)) * 100 : 100;
     document.getElementById("p-fill").style.width = pct + "%";
-    document.getElementById("p-count").textContent = `${curIdx + 1} / ${total}`;
+
+    const remStops = Math.max(0, total - 1 - curIdx);
+    const totalMins = Number(data.tm || 0);
+    const remMins = total > 1 && totalMins > 0
+      ? Math.max(1, Math.round((remStops / (total - 1)) * totalMins))
+      : 0;
+    const remEl = document.getElementById("p-rem");
+    remEl.innerHTML = remStops === 0
+      ? "<strong>Финиш</strong>"
+      : `Осталось: <strong>${remStops} ост.</strong>${remMins ? ` (~${remMins} мин)` : ""}`;
 
     const notice = document.getElementById("notice");
     const curItem = stationEls[curIdx];
@@ -565,9 +745,53 @@
     }
   }
 
+  function resetProgress() {
+    curIdx = 0;
+    segmentBoxes.forEach(b => { delete b.div.dataset.manualToggle; });
+    if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
+    renderProgress();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  let localMode = "end";
+  function setLocalMode(mode) {
+    localMode = mode;
+    document.getElementById("sw-end").classList.toggle("active", mode === "end");
+    document.getElementById("sw-cur").classList.toggle("active", mode === "cur");
+    updateLocalCard();
+  }
+
+  function updateLocalCard() {
+    if (localMode === "cur" && stationEls[curIdx]) {
+      const st = stationEls[curIdx].st;
+      document.getElementById("l-zh").textContent = st.z || data.ez || "";
+      document.getElementById("l-py").textContent = st.e || "";
+      document.getElementById("l-ru").textContent = st.r || "";
+    } else {
+      document.getElementById("l-zh").textContent = data.ez || "";
+      document.getElementById("l-py").textContent = data.ep || "";
+      document.getElementById("l-ru").textContent = data.er || "";
+    }
+  }
+
   function showLocal(flag) {
+    if (flag) updateLocalCard();
     document.getElementById("view-route").style.display = flag ? "none" : "block";
     document.getElementById("view-local").style.display = flag ? "block" : "none";
+  }
+
+  function copyZh() {
+    const txt = document.getElementById("l-zh").textContent || "";
+    const btn = document.getElementById("copy-btn");
+    const done = () => {
+      btn.textContent = "Скопировано ✓";
+      setTimeout(() => { btn.textContent = "Скопировать"; }, 1600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(done).catch(() => done());
+    } else {
+      done();
+    }
   }
 
   renderProgress();
