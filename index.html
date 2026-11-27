@@ -632,17 +632,22 @@
       const al = document.getElementById("amap-link");
       const wl = document.getElementById("amap-web-link");
       const webUrl = data.amap || `https://uri.amap.com/marker?position=${data.lon},${data.lat}&name=${encodeURIComponent(data.ez || "")}&src=chinametro&callnative=1`;
-      const nativeUrl = buildNativeAmapUrl(data.lat, data.lon, data.ez || data.er || "", webUrl);
+      const bridgeUrl = buildAmapBridgeUrl(data.lat, data.lon, data.ez || "", data.er || "", webUrl);
+      const nativeUrl = buildNativeAmapUrl(data.lat, data.lon, data.ez || data.er || "");
 
       al.style.display = "inline-flex";
-      al.href = nativeUrl || webUrl;
+      al.href = (tg && tg.openLink) ? bridgeUrl : (nativeUrl || bridgeUrl);
       al.onclick = (e) => {
-        if (!nativeUrl) {
+        try { tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred("light"); } catch (_) {}
+        if (tg && tg.openLink) {
+          // Telegram WebView блокирует прямые iosamap:// и intent:// клики —
+          // открываем https-мост amap.html во внешнем браузере, который запускает приложение Amap.
           e.preventDefault();
-          if (tg && tg.openLink) tg.openLink(webUrl);
-          else window.open(webUrl, "_blank");
+          tg.openLink(bridgeUrl, { try_instant_view: false });
+        } else if (!nativeUrl) {
+          e.preventDefault();
+          window.open(bridgeUrl, "_blank");
         }
-        // На iOS/Android даём браузеру/WebView напрямую обработать iosamap:// или intent:// без редиректа на сайт
       };
 
       wl.style.display = "block";
@@ -650,13 +655,27 @@
       wl.onclick = (e) => {
         if (tg && tg.openLink) {
           e.preventDefault();
-          tg.openLink(webUrl);
+          tg.openLink(webUrl, { try_instant_view: false });
         }
       };
     }
   }
 
-  function buildNativeAmapUrl(lat, lon, name, fallbackUrl) {
+  function buildAmapBridgeUrl(lat, lon, nameZh, nameRu, fallbackUrl) {
+    if (!lat || !lon) return fallbackUrl;
+    try {
+      const u = new URL("amap.html", window.location.href);
+      u.searchParams.set("lat", String(lat));
+      u.searchParams.set("lon", String(lon));
+      if (nameZh) u.searchParams.set("name", nameZh);
+      if (nameRu) u.searchParams.set("ru", nameRu);
+      return u.toString();
+    } catch (_) {
+      return fallbackUrl;
+    }
+  }
+
+  function buildNativeAmapUrl(lat, lon, name) {
     if (!lat || !lon) return "";
     const ua = navigator.userAgent || "";
     const isIOS = /iPad|iPhone|iPod/i.test(ua);
