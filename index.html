@@ -667,7 +667,7 @@
       return `iosamap://viewMap?sourceApplication=ChinaMetro&poiname=${qName}&lat=${lat}&lon=${lon}&dev=0`;
     }
     if (isAndroid) {
-      return `intent://viewMap?sourceApplication=ChinaMetro&poiname=${qName}&lat=${lat}&lon=${lon}&dev=0#Intent;scheme=androidamap;package=com.autonavi.minimap;S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`;
+      return `intent://viewMap?sourceApplication=ChinaMetro&poiname=${qName}&lat=${lat}&lon=${lon}&dev=0#Intent;scheme=androidamap;package=com.autonavi.minimap;end`;
     }
     return "";
   }

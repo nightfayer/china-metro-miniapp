@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Открыть в Amap — ChinaMetro</title>
+<style>
+  :root {
+    --bg: #F5F5F7;
+    --surface: #FFFFFF;
+    --border: rgba(0, 0, 0, 0.08);
+    --text: #111113;
+    --muted: #6E6E73;
+    --accent: #1677FF;
+    --accent-hover: #0E63DB;
+    --success: #16A34A;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0A0A0B;
+      --surface: #141416;
+      --border: rgba(255, 255, 255, 0.09);
+      --text: #F5F5F7;
+      --muted: #8E8E93;
+      --accent: #2563EB;
+      --accent-hover: #1D4ED8;
+      --success: #22C55E;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 100dvh;
+    padding: 24px 18px calc(24px + env(safe-area-inset-bottom));
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .top {
+    padding-top: 12px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    margin-bottom: 18px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .zh {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+    word-break: break-word;
+  }
+  .ru {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.4;
+    margin-bottom: 14px;
+  }
+  .coords {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    width: 100%;
+  }
+  .status {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+  .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .btn-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 15px 18px;
+    border-radius: 14px;
+    background: var(--accent);
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+  .btn-primary:active { transform: scale(0.985); background: var(--accent-hover); }
+  .btn-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 13px 16px;
+    border-radius: 14px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .btn-secondary:active { opacity: 0.75; }
+  .links-row {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .text-link {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    padding: 4px 2px;
+  }
+  .copied { color: var(--success); border-color: var(--success); }
+</style>
+</head>
+<body>
+  <div class="top">
+    <div class="badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span>ChinaMetro · Amap</span>
+    </div>
+    <div class="card">
+      <div class="zh" id="place-zh">Загрузка...</div>
+      <div class="ru" id="place-ru"></div>
+      <div class="coords" id="place-coords"></div>
+    </div>
+    <div class="status" id="status-text">Запускаем приложение Amap...</div>
+  </div>
+
+  <div class="actions">
+    <a class="btn-primary" id="open-native" href="#">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+      <span>Открыть в приложении Amap</span>
+    </a>
+    <button class="btn-secondary" id="copy-btn" type="button">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      <span id="copy-label">Скопировать название для Amap</span>
+    </button>
+    <div class="links-row">
+      <a class="text-link" id="alt-android" href="#" style="display:none;">Запасной запуск (androidamap://)</a>
+      <a class="text-link" id="open-web" href="#" target="_blank" rel="noopener">Веб-карта в браузере</a>
+    </div>
+  </div>
+
+<script>
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const lat = (params.get("lat") || "").trim();
+  const lon = (params.get("lon") || "").trim();
+  const nameZh = (params.get("name") || "").trim();
+  const nameRu = (params.get("ru") || "").trim();
+
+  const zhEl = document.getElementById("place-zh");
+  const ruEl = document.getElementById("place-ru");
+  const coordsEl = document.getElementById("place-coords");
+  const statusEl = document.getElementById("status-text");
+  const openBtn = document.getElementById("open-native");
+  const altAndroidBtn = document.getElementById("alt-android");
+  const webBtn = document.getElementById("open-web");
+  const copyBtn = document.getElementById("copy-btn");
+  const copyLabel = document.getElementById("copy-label");
+
+  zhEl.textContent = nameZh || nameRu || "Точка на карте";
+  if (nameRu && nameRu !== nameZh) {
+    ruEl.textContent = nameRu;
+  } else {
+    ruEl.style.display = "none";
+  }
+
+  if (!lat || !lon) {
+    statusEl.textContent = "Координаты не переданы.";
+    openBtn.style.display = "none";
+    return;
+  }
+
+  coordsEl.textContent = `GCJ-02 · ${lat}, ${lon}`;
+
+  const qName = encodeURIComponent(nameZh || nameRu || "Destination");
+  const webUrl = `https://uri.amap.com/marker?position=${encodeURIComponent(lon)},${encodeURIComponent(lat)}&name=${qName}&src=chinametro&callnative=1`;
+  const iosUrl = `iosamap://viewMap?sourceApplication=ChinaMetro&poiname=${qName}&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&dev=0`;
+  const androidSchemeUrl = `androidamap://viewMap?sourceApplication=ChinaMetro&poiname=${qName}&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&dev=0`;
+  const androidIntentUrl = `intent://viewMap?sourceApplication=ChinaMetro&poiname=${qName}&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&dev=0#Intent;scheme=androidamap;package=com.autonavi.minimap;end`;
+
+  const ua = navigator.userAgent || "";
+  const isIOS = /iPad|iPhone|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const isAndroid = /Android/i.test(ua);
+
+  webBtn.href = webUrl;
+
+  if (isIOS) {
+    openBtn.href = iosUrl;
+    statusEl.textContent = "Если приложение Amap не открылось автоматически, нажмите кнопку ниже и подтвердите переход.";
+    setTimeout(() => { window.location.href = iosUrl; }, 120);
+  } else if (isAndroid) {
+    openBtn.href = androidIntentUrl;
+    altAndroidBtn.href = androidSchemeUrl;
+    altAndroidBtn.style.display = "inline";
+    statusEl.textContent = "Если Amap не открылся автоматически, нажмите кнопку ниже. На веб-сайт перекидывать не будет.";
+    setTimeout(() => { window.location.href = androidIntentUrl; }, 120);
+  } else {
+    openBtn.href = webUrl;
+    openBtn.querySelector("span").textContent = "Открыть веб-карту Amap";
+    webBtn.style.display = "none";
+    statusEl.textContent = "Вы открыли ссылку на компьютере — откройте её в веб-версии или с телефона.";
+  }
+
+  copyBtn.addEventListener("click", async () => {
+    const text = nameZh || nameRu || `${lat},${lon}`;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (_) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
+    copyBtn.classList.add("copied");
+    copyLabel.textContent = `Скопировано: ${text}`;
+    setTimeout(() => {
+      copyBtn.classList.remove("copied");
+      copyLabel.textContent = "Скопировать название для Amap";
+    }, 2200);
+  });
+})();
+</script>
+</body>
+</html>
