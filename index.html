@@ -51,7 +51,7 @@
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding: 10px 14px 108px;
+      padding: 10px 14px 136px;
       font-size: 14px;
       line-height: 1.38;
       font-variant-numeric: tabular-nums;
@@ -832,25 +832,38 @@
       const bridgeUrl = buildAmapBridgeUrl(data.lat, data.lon, data.ez || "", data.er || "", webUrl);
       const nativeUrl = buildNativeAmapUrl(data.lat, data.lon, data.ez || data.er || "");
 
+      const inTelegram = !!(tg && tg.platform && tg.platform !== "unknown" && typeof tg.openLink === "function");
+
+      function openExternal(url) {
+        if (inTelegram) {
+          try {
+            tg.openLink(url);
+            return;
+          } catch (_) {}
+        }
+        const win = window.open(url, "_blank", "noopener");
+        if (!win) window.location.href = url;
+      }
+
       al.style.display = "inline-flex";
-      al.href = (tg && tg.openLink) ? bridgeUrl : (nativeUrl || bridgeUrl);
+      al.href = inTelegram ? bridgeUrl : (nativeUrl || bridgeUrl);
       al.onclick = (e) => {
         try { tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred("light"); } catch (_) {}
-        if (tg && tg.openLink) {
+        if (inTelegram) {
           e.preventDefault();
-          tg.openLink(bridgeUrl, { try_instant_view: false });
+          openExternal(bridgeUrl);
         } else if (!nativeUrl) {
           e.preventDefault();
-          window.open(bridgeUrl, "_blank");
+          openExternal(bridgeUrl);
         }
       };
 
       wl.style.display = "block";
       wl.href = webUrl;
       wl.onclick = (e) => {
-        if (tg && tg.openLink) {
+        if (inTelegram) {
           e.preventDefault();
-          tg.openLink(webUrl, { try_instant_view: false });
+          openExternal(webUrl);
         }
       };
     }
